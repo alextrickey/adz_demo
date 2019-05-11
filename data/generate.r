@@ -1,4 +1,4 @@
-#Define Data for First Examples
+#Define Data for Time Series Modeling Example
 
 library(lubridate)
 library(ggplot2)
@@ -48,21 +48,21 @@ make_ad_data <- function(t, rpc, label) {
 ndays = 1
 t = 1:(24*ndays)
 
-#Ad1
+#Ad Category 1
 rpc <- rev_ts(t)
 ad1 <- make_ad_data(t, rpc, label = "dog_food")
 
-#Ad2
+#Ad Category 2
 rpc <- rev_ts(t, amplitude = 0.09, shift = 5)
 ad2 <- make_ad_data(t, rpc, "cat_toys")
 
-#Ad3
+#Ad Category 3
 rpc <- rev_ts(t, amplitude = 0.01, ave_value = 0.12)
 ad3 <- make_ad_data(t, rpc, "phone_service")
 
 #Combine
 data <- rbind(ad1, ad2, ad3)
 
-#Visualize
+#Visualize (just show one day)
 ggplot(data = data, aes(ts, rpc, col = label)) +
   geom_point() + geom_smooth()
