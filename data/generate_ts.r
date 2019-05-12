@@ -1,7 +1,13 @@
-#Define Data for Time Series Modeling Example
+# Define Data for Time Series Modeling Example
+# Outputs CSV used for Problem 1 (see slides and problem1.r)
 
 library(lubridate)
 library(ggplot2)
+
+
+###############
+## Functions ##
+###############
 
 #Function to Generate Cyclic Data with Noise
 cyclic_data <- function(t, amplitude = 1, ave_value = 0, s_noise = 0, shift = 0) {
@@ -23,10 +29,10 @@ rev_ts <- function(t, amplitude = 0.1, ave_value = 0.15, s_noise = 0.05, shift =
 }
 
 #Make all data for an Ad
-make_ad_data <- function(t, rpc, label) {
+make_ad_data <- function(t, rpc, ad_type) {
 
-  #Repeat label
-  label = rep(label, length(t))
+  #Create an ad_type vector
+  ad_type = rep(ad_type, length(t))
 
   #Timestamps
   ts = round_date(now(), unit = "hour") + hours(t - max(t))
@@ -41,28 +47,38 @@ make_ad_data <- function(t, rpc, label) {
   rpi <- ifelse(imps > 0, total_rev / imps, NA)
 
   #Return all
-  data.frame(label, ts, t, clicks, imps, rpc, rpi, total_rev)
+  data.frame(ad_type, ts, t, clicks, imps, rpc, rpi, total_rev)
 }
 
+
+####################
+## Create Ad Data ##
+####################
+
 #Define Timeseries
-ndays = 1
+ndays = 22
 t = 1:(24*ndays)
 
 #Ad Category 1
 rpc <- rev_ts(t)
-ad1 <- make_ad_data(t, rpc, label = "dog_food")
+ad1 <- make_ad_data(t, rpc, ad_type = "dog_food")
 
 #Ad Category 2
 rpc <- rev_ts(t, amplitude = 0.09, shift = 5)
-ad2 <- make_ad_data(t, rpc, "cat_toys")
+ad2 <- make_ad_data(t, rpc, ad_type = "cat_toys")
 
 #Ad Category 3
-rpc <- rev_ts(t, amplitude = 0.01, ave_value = 0.12)
-ad3 <- make_ad_data(t, rpc, "phone_service")
+rpc <- rev_ts(t, amplitude = 0.01, ave_value = 0.15,  s_noise = 0.02)
+ad3 <- make_ad_data(t, rpc, ad_type = "phone_service")
 
 #Combine
 data <- rbind(ad1, ad2, ad3)
 
-#Visualize (just show one day)
-ggplot(data = data, aes(ts, rpc, col = label)) +
-  geom_point() + geom_smooth()
+
+###################
+## Write to File ##
+###################
+
+#Write to File
+write.csv(x = data, file = "adz/data/hourly_ad_category_data.csv", row.names = FALSE)
+
