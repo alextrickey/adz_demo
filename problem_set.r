@@ -53,7 +53,7 @@ ad_data[!is.na(total_rev),
 
 # Visualize RPC (just show one day)
 library(ggplot2)
-ggplot(data = ad_data[ts >= "2019-05-11",],
+ggplot(data = ad_data[ts >= "2019-05-13",],
        aes(ts, rpc, col = ad_type)) +
   geom_point() +
   geom_smooth()
@@ -63,8 +63,49 @@ ggplot(data = ad_data[ts >= "2019-05-11",],
 # Problem 2 #
 #############
 
-##################################################################
-# A.
-##################################################################
+#########################################################
+# A. Convert rpc's for each ad into time-series objects #
+#########################################################
+library(forecast)
+
+ts1 <- ts(ad_data[ad_type == "dog_food", rpc], frequency = 24)
+ts1 <- na.interp(ts1)
+
+######################################################
+# B. Create a Visualization of the TS using decomp() #
+######################################################
+
+decomp <- stl(ts1, s.window="periodic")
+plot(decomp)
+
+###############################################
+# C. Split the ts into train & test intervals #
+###############################################
+
+
+############################################
+# C. Fit an ARIMA Model using auto.arima() #
+############################################
+
+fit1 <- auto.arima(ts1[1:503])
+accuracy(forecast(fit1, h=24), ts1[504:527])
+
+
+######################################
+# D. Fit a TBATS Model using tbats() #
+#    using a 24 hour seasonal period #
+######################################
+
+fit2 <- tbats(ts1[1:503], seasonal.periods = 24)
+accuracy(forecast(fit2, h=24), ts1[504:527])
+
+
+######################################
+# D. Fit a TBATS Model using tbats() #
+#    using a 24 hour seasonal period #
+######################################
+
+fit3 <- tbats(ts1[1:503], seasonal.periods = c(24, 7*24))
+accuracy(forecast(fit3, h=24), ts1[504:527])
 
 
