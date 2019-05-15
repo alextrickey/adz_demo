@@ -54,6 +54,7 @@ make_ad_data <- function(t, rpc, ad_type) {
 ####################
 ## Create Ad Data ##
 ####################
+set.seed(876)
 
 #Define Timeseries
 ndays = 22
@@ -72,13 +73,54 @@ rpc <- rev_ts(t, amplitude = 0.01, ave_value = 0.15,  s_noise = 0.02)
 ad3 <- make_ad_data(t, rpc, ad_type = "phone_service")
 
 #Combine
-data <- rbind(ad1, ad2, ad3)
+ts_data <- rbind(ad1, ad2, ad3)
+
+###################
+## Write to File ##
+###################
+
+#Write TS Data to File
+write.csv(x = ts_data,
+          file = "adz/data/hourly_ad_category_data.csv",
+          row.names = FALSE)
+
+
+###########################
+# Create A/B Testing Data #
+###########################
+set.seed(995)
+
+baseline <- rbinom(n = 11080, size = 1, prob = 0.8)
+day1 <- data.table(baseline)
+day1[baseline == 0, rps := rnorm(n = .N, mean = 0.19, sd = 0.05)]
+day1[baseline == 1, rps := rnorm(n = .N, mean = 0.18, sd = 0.05)]
+day1[, date := "2019-05-13"]
+
+baseline <- rbinom(n = 9727, size = 1, prob = 0.5)
+day2 <- data.table(baseline)
+day2[baseline == 0, rps := rnorm(n = .N, mean = 0.17, sd = 0.05)]
+day2[baseline == 1, rps := rnorm(n = .N, mean = 0.15, sd = 0.05)]
+day2[, date := "2019-05-14"]
+
+baseline <- rbinom(n = 12082, size = 1, prob = 0.2)
+day3 <- data.table(baseline)
+day3[baseline == 0, rps := rnorm(n = .N, mean = 0.15, sd = 0.05)]
+day3[baseline == 1, rps := rnorm(n = .N, mean = 0.13, sd = 0.05)]
+day3[, date := "2019-05-15"]
 
 
 ###################
 ## Write to File ##
 ###################
 
-#Write to File
-write.csv(x = data, file = "adz/data/hourly_ad_category_data.csv", row.names = FALSE)
+#Write A/B Data to File
+write.csv(x = day1,
+          file = "adz/data/day1.csv",
+          row.names = FALSE)
+write.csv(x = day2,
+          file = "adz/data/day2.csv",
+          row.names = FALSE)
+write.csv(x = day3,
+          file = "adz/data/day3.csv",
+          row.names = FALSE)
 
