@@ -1,17 +1,17 @@
-# Problem 1
-# Which kind of ad should we show?
+# Data Science Use Cases in Ad Tech
+# Problem Set
 
 
 #############
 # Problem 1 #
 #############
 
-##############################################################
-# A. Load the data from adz/data/hourly_ad_category_data.csv #
-##############################################################
+###################################################################
+# A. Load the data from adz_demo/data/hourly_ad_category_data.csv #
+###################################################################
 
 # Hint: If using read.csv use the option: colClasses = c("ts" = "POSIXct")
-ad_data <- read.csv("adz/data/hourly_ad_category_data.csv",
+ad_data <- read.csv("adz_demo/data/hourly_ad_category_data.csv",
                     colClasses = c("ts" = "POSIXct"))
 
 #####################################
@@ -154,7 +154,7 @@ accuracy(forecast(fit3, h=10), ts1[504:527])
 ############################
 
 # Read in and check the data
-day1 <- fread("adz/data/day1.csv")
+day1 <- fread("adz_demo/data/day1.csv")
 head(day1)
 
 # Create confidence intervals for the RPS estimates
@@ -172,7 +172,7 @@ stats
 ############################
 
 # Repeat the analysis for the second day
-day2 <- fread("adz/data/day2.csv")
+day2 <- fread("adz_demo/data/day2.csv")
 stats <- day2[, .(m = mean(rps), sd = sd(rps), .N,
                   moe = 1.96*sd(rps)/sqrt(.N)), by = baseline]
 stats[, `:=`(lower = m - moe, upper = m + moe)]
