@@ -62,81 +62,95 @@ ggplot(data = ad_data[ts >= "2019-05-13",],
 library(forecast)
 
 # Dog food ad
-ts1 <- ts(ad_data[ad_type == "phone_service", rpc], frequency = 24)
-ts1 <- na.interp(ts1)
+ts_dog <- ts(ad_data[ad_type == "dog_food", rpc], frequency = 24)
 
 # Cat toys ad
-
+ts_cat <- ts(ad_data[ad_type == "cat_toys", rpc], frequency = 24)
 
 # Phone service ad
-
+ts_phone <- ts(ad_data[ad_type == "phone_service", rpc], frequency = 24)
 
 
 #####################################################
-# B. Create Visualizations of the TS using decomp() #
+# B. Create visualizations of the TS using decomp() #
 #####################################################
 
 # Dog food ad
-decomp1 <- stl(ts1, s.window="periodic")
-plot(decomp1)
+decomp_dog <- stl(na.interp(ts_dog), s.window="periodic")
+plot(decomp_dog)
 
-# Cat toys ad
-
+# Cat food ad
+decomp_cat <- stl(na.interp(ts_cat), s.window="periodic")
+plot(decomp_cat)
 
 # Phone service ad
-
+decomp_phone <- stl(na.interp(ts_phone), s.window="periodic")
+plot(decomp_phone)
 
 
 ###############################################################
 # C. Decide how to split the data into train & test intervals #
 ###############################################################
 
+# How much data is there?
+n_hours <- length(ts_dog)
+print(n_hours) # 528 hours = 22 days
 
+# Let's set aside the last day for testing
+train_end <- n_hours - 24
+test_start <- train_end + 1
+
+#####################################################
+# D. Impute nulls in train and test sets separately #
+#####################################################
+
+# Split dog food time series
+train_ts_dog <- ts(na.interp(ts_dog[1:train_end]),
+                   frequency = 24)
+test_ts_dog <- ts(na.interp(ts_dog[test_start:n_hours]), 
+                  start = c(test_start/24, 1),
+                  frequency = 24)
 
 ############################################
-# D. Fit an ARIMA Model using auto.arima() #
+# E. Fit an ARIMA Model using auto.arima() #
 ############################################
 
-fit1 <- auto.arima(ts1[1:503])
-accuracy(forecast(fit1, h=24), ts1[504:527])
+fit1 <- auto.arima(train_ts_dog)
+accuracy(forecast(fit1, h = 24), test_ts_dog)
 
 
 ######################################
-# E. Fit a TBATS Model using tbats() #
+# F. Fit a TBATS Model using tbats() #
 #    using a 24 hour seasonal period #
 ######################################
 
-fit2 <- tbats(ts1[1:503], seasonal.periods = 24)
-accuracy(forecast(fit2, h=24), ts1[504:527])
+fit2 <- tbats(train_ts_dog, seasonal.periods = 24)
+accuracy(forecast(fit2, h=24), test_ts_dog)
 
 
 ###################################
-# F. Fit a TBATS Model with daily #
+# G. Fit a TBATS Model with daily #
 # and weekly seasonal periods     #
 ###################################
 
 # Hint: use seasonal.periods = c(24, 7*24)
 
-fit3 <- tbats(ts1[1:503], seasonal.periods = c(24, 7*24))
-accuracy(forecast(fit3, h=10), ts1[504:527])
+fit3 <- tbats(train_ts_dog, seasonal.periods = c(24, 7*24))
+accuracy(forecast(fit3, h=24), test_ts_dog)
 
 
-#################
-# G. Questions? #
-#################
+#####################
+# H. Choose a model #
+#####################
 
-# Based on the results above which model would you choose?
+# Based on the results above which model would you choose? Why?
 
+# Plot the forcast for you selected model
+plot(forecast(fit2, h=24))
 
-# Our accuracy measures in the test sets here are likely to be better
-# than what we will observe in production. Where did we go wrong and
-# how can we correct the accuracy estimates?
-
-
-###########################################
-# Plot the forcast for you selected model #
-###########################################
-
+##############################################
+# I. Repeat the analysis for another ad type #
+##############################################
 
 
 
@@ -196,7 +210,7 @@ stats
 
 combined <- rbind(day1, day2, day3)
 stats <- combined[, .(m = mean(rps), sd = sd(rps), .N,
-                  moe = 1.96*sd(rps)/sqrt(.N)), by = baseline]
+                      moe = 1.96*sd(rps)/sqrt(.N)), by = baseline]
 stats[, `:=`(lower = m - moe, upper = m + moe)]
 stats
 
