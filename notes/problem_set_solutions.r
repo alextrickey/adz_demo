@@ -1,7 +1,6 @@
 # Data Science Use Cases in Ad Tech
 # Problem Set - PARTIAL SOLUTIONS
 
-library(data.table)
 
 #############
 # Problem 1 #
@@ -12,6 +11,7 @@ library(data.table)
 ###################################################################
 
 # Hint: If using read.csv or fread set colClasses = c("ts" = "POSIXct")
+library(data.table)
 ad_data <- fread("adz_demo/data/hourly_ad_category_data.csv",
                  colClasses = c("ts" = "POSIXct"))
 
@@ -19,9 +19,8 @@ ad_data <- fread("adz_demo/data/hourly_ad_category_data.csv",
 # B. View and/or summarize the data #
 #####################################
 
-head(ad_data)
-tail(ad_data)
-
+print(ad_data)
+ad_data[, lapply(.SD, class)]
 summary(ad_data)
 
 ############################################
@@ -29,26 +28,20 @@ summary(ad_data)
 ############################################
 
 # Let's check for missing values
-apply(X = is.na(ad_data), MARGIN = 2, FUN = sum)
+ad_data[, lapply(.SD, function(c) sum(is.na(c)))]
 
 # Why are there more missing values for rpi than rpc?
-sum(ad_data["imps"] < ad_data["clicks"])
-
+ad_data[imps < clicks, .N]
 
 ##################################################################
 # D. Try to summarize the data using statistics / visualizations #
 ##################################################################
 
 # RPI and RPC by ad_type
-
-# ... via data.table
-library(data.table) #install.packages(data.table)
-ad_data <- data.table(ad_data)
-
 ad_data[!is.na(total_rev),
-            .(rpc = sum(total_rev) / sum(clicks),
-              rpi = sum(total_rev) / sum(imps)
-            ), by = ad_type]
+        .(rpc = sum(total_rev) / sum(clicks),
+          rpi = sum(total_rev) / sum(imps)
+        ), by = ad_type]
 
 
 # Visualize RPC (just show one day)
