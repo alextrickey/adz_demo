@@ -1,6 +1,7 @@
 # Data Science Use Cases in Ad Tech
 # Problem Set - PARTIAL SOLUTIONS
 
+library(data.table)
 
 #############
 # Problem 1 #
@@ -10,9 +11,9 @@
 # A. Load the data from adz_demo/data/hourly_ad_category_data.csv #
 ###################################################################
 
-# Hint: If using read.csv use the option: colClasses = c("ts" = "POSIXct")
-ad_data <- read.csv("adz_demo/data/hourly_ad_category_data.csv",
-                    colClasses = c("ts" = "POSIXct"))
+# Hint: If using read.csv or fread set colClasses = c("ts" = "POSIXct")
+ad_data <- fread("adz_demo/data/hourly_ad_category_data.csv",
+                 colClasses = c("ts" = "POSIXct"))
 
 #####################################
 # B. View and/or summarize the data #
