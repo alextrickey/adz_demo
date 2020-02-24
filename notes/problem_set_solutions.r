@@ -79,7 +79,7 @@ ts_phone <- ts(ad_data[ad_type == "phone_service", rpc], frequency = 24)
 decomp_dog <- stl(na.interp(ts_dog), s.window="periodic")
 plot(decomp_dog)
 
-# Cat food ad
+# Cat toys ad
 decomp_cat <- stl(na.interp(ts_cat), s.window="periodic")
 plot(decomp_cat)
 
@@ -133,7 +133,7 @@ accuracy(forecast(fit2, h=24), test_ts_dog)
 # and weekly seasonal periods     #
 ###################################
 
-# Hint: use seasonal.periods = c(24, 7*24)
+# seasonal.periods = c(24, 7*24)
 
 fit3 <- tbats(train_ts_dog, seasonal.periods = c(24, 7*24))
 accuracy(forecast(fit3, h=24), test_ts_dog)
@@ -197,8 +197,13 @@ stats
 ############################
 
 # Repeat the analysis for the third day
+day3 <- fread("adz_demo/data/day3.csv")
+head(day3)
 
-# What is the lift our algo provides over baseline?
+stats <- day3[, .(m = mean(rps), sd = sd(rps), .N,
+                  moe = 1.96*sd(rps)/sqrt(.N)), by = baseline]
+stats[, `:=`(lower = m - moe, upper = m + moe)]
+stats
 
 
 #########################
