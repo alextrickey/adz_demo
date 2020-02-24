@@ -1,5 +1,5 @@
 # Data Science Use Cases in Ad Tech
-# Problem Set - PARTIAL SOLUTIONS
+# Problem Set - SOLUTIONS
 
 
 #############
@@ -163,6 +163,8 @@ plot(forecast(fit2, h=24))
 # A. Day1 Model Comparison #
 ############################
 
+# On day 1 we sent 20% of traffic to the new optimizer.  
+
 # Read in and check the data
 day1 <- fread("adz_demo/data/day1.csv")
 head(day1)
@@ -171,15 +173,17 @@ head(day1)
 stats <- day1[, .(m = mean(rps), sd = sd(rps), .N,
                   moe = 1.96*sd(rps)/sqrt(.N)), by = baseline]
 stats[, `:=`(lower = m - moe, upper = m + moe)]
-stats
+print(stats)
 
-# Is it safe to send more traffic to the new algo?
+# Does it seems safe to send more traffic to the new optimizer?
 
 
 
 ############################
 # B. Day2 Model Comparison #
 ############################
+
+# On day 2 we sent 50% of traffic to the new optimizer. 
 
 # Repeat the analysis for the second day
 day2 <- fread("adz_demo/data/day2.csv")
@@ -188,13 +192,15 @@ stats <- day2[, .(m = mean(rps), sd = sd(rps), .N,
 stats[, `:=`(lower = m - moe, upper = m + moe)]
 stats
 
-# Should we increase the traffic % again?
+# Does it make sense to increase the traffic % again?
 
 
 
 ############################
 # C. Day3 Model Comparison #
 ############################
+
+# On day 3 we sent 80% of traffic to the new optimizer. 
 
 # Repeat the analysis for the third day
 day3 <- fread("adz_demo/data/day3.csv")
@@ -203,7 +209,7 @@ head(day3)
 stats <- day3[, .(m = mean(rps), sd = sd(rps), .N,
                   moe = 1.96*sd(rps)/sqrt(.N)), by = baseline]
 stats[, `:=`(lower = m - moe, upper = m + moe)]
-stats
+print(stats)
 
 
 #########################
@@ -217,9 +223,9 @@ combined <- rbind(day1, day2, day3)
 stats <- combined[, .(m = mean(rps), sd = sd(rps), .N,
                       moe = 1.96*sd(rps)/sqrt(.N)), by = baseline]
 stats[, `:=`(lower = m - moe, upper = m + moe)]
-stats
+print(stats)
 
-#What happened? Why?
+# Wait... what?! What happened? Why?
 
 # Visualize RPS
 library(ggplot2)
