@@ -30,7 +30,7 @@ summary(ad_data)
 # Let's check for missing values
 ad_data[, lapply(.SD, function(c) sum(is.na(c)))]
 
-# Why are there more missing values for rpi than rpc?
+# Why are there sometimes more impressions than clicks?
 ad_data[imps < clicks, .N]
 
 ##################################################################
@@ -61,31 +61,17 @@ ggplot(data = ad_data[ts >= "2019-05-13",],
 #########################################################
 library(forecast)
 
-# Dog food ad
+# Demo: Dog food time series
 ts_dog <- ts(ad_data[ad_type == "dog_food", rpc], frequency = 24)
-
-# Cat toys ad
-ts_cat <- ts(ad_data[ad_type == "cat_toys", rpc], frequency = 24)
-
-# Phone service ad
-ts_phone <- ts(ad_data[ad_type == "phone_service", rpc], frequency = 24)
 
 
 #####################################################
 # B. Create visualizations of the TS using decomp() #
 #####################################################
 
-# Dog food ad
+# Demo: Dog food time series
 decomp_dog <- stl(na.interp(ts_dog), s.window="periodic")
 plot(decomp_dog)
-
-# Cat toys ad
-decomp_cat <- stl(na.interp(ts_cat), s.window="periodic")
-plot(decomp_cat)
-
-# Phone service ad
-decomp_phone <- stl(na.interp(ts_phone), s.window="periodic")
-plot(decomp_phone)
 
 
 ###############################################################
@@ -104,17 +90,19 @@ test_start <- train_end + 1
 # D. Impute nulls in train and test sets separately #
 #####################################################
 
-# Split dog food time series
+# Demo: Split dog food time series
 train_ts_dog <- ts(na.interp(ts_dog[1:train_end]),
                    frequency = 24)
 test_ts_dog <- ts(na.interp(ts_dog[test_start:n_hours]), 
                   start = c(test_start/24, 1),
                   frequency = 24)
 
+
 ############################################
 # E. Fit an ARIMA Model using auto.arima() #
 ############################################
 
+# Demo: ARIMA model for dog food time series
 fit1 <- auto.arima(train_ts_dog)
 accuracy(forecast(fit1, h = 24), test_ts_dog)
 
@@ -124,17 +112,16 @@ accuracy(forecast(fit1, h = 24), test_ts_dog)
 #    using a 24 hour seasonal period #
 ######################################
 
+# Demo: TBATS model for dog food time series
 fit2 <- tbats(train_ts_dog, seasonal.periods = 24)
 accuracy(forecast(fit2, h=24), test_ts_dog)
 
 
-###################################
-# G. Fit a TBATS Model with daily #
-# and weekly seasonal periods     #
-###################################
+###############################################################
+# G. Fit a TBATS Model with daily and weekly seasonal periods #
+###############################################################
 
-# seasonal.periods = c(24, 7*24)
-
+# Demo: Try adding a weekly period the seasonality
 fit3 <- tbats(train_ts_dog, seasonal.periods = c(24, 7*24))
 accuracy(forecast(fit3, h=24), test_ts_dog)
 
@@ -145,12 +132,15 @@ accuracy(forecast(fit3, h=24), test_ts_dog)
 
 # Based on the results above which model would you choose? Why?
 
+
 # Plot the forcast for you selected model
 plot(forecast(fit2, h=24))
 
 ##############################################
 # I. Repeat the analysis for another ad type #
 ##############################################
+
+# Try to repeat this analysis for the cat toys and/or phone service ads
 
 
 
@@ -225,7 +215,8 @@ stats <- combined[, .(m = mean(rps), sd = sd(rps), .N,
 stats[, `:=`(lower = m - moe, upper = m + moe)]
 print(stats)
 
-# Wait... what?! What happened? Why?
+# Wait... what?! What happened? Why? Explore the data to understand this
+# unexpected pattern of results. 
 
 # Visualize RPS
 library(ggplot2)
@@ -234,4 +225,3 @@ combined[, baseline := as.factor(baseline)]
 ggplot(data = combined[, .(mean_rps = mean(rps), .N), by = .(baseline, date)],
        aes(baseline, y = mean_rps, x = date, col = baseline, size = N)) +
   geom_point()
-
